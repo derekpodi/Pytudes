@@ -1,6 +1,7 @@
-#https://www.youtube.com/watch?v=p65AHm9MX80
+#!/usr/bin/env python3
 
 #Big O
+#https://www.youtube.com/watch?v=p65AHm9MX80
 
 
 def sum1(n):
