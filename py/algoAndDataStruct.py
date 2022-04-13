@@ -76,3 +76,16 @@ class Array_Seq:
     def insert_last(self, x):   self.insert_at(len(self), x)
     def delete_last(self):      return self.delete_at(len(self) - 1)
 
+
+
+class Linked_List_Node:
+    def __init__(self, x):          #O(1)
+        self.item = x
+        self.next = None
+
+    def later_node(self, i):        #O(1)
+        if i == 0:  return self
+        assert self.next
+        return self.next.later_node(i - 1)
+    
+        
