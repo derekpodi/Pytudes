@@ -521,3 +521,83 @@ class Hash_Table_Set:
             x = self.find_next(x.key)
 
 
+
+#R5
+#Comparison Sorting - omega(n log n)
+#Direct Access Array Sort - no duplicate keys, and can't handle large key ranges
+def direct_access_sort(A):
+    """Sort A assuming items have distinct non-negative keys"""
+    u = 1 + max([x.key for x in A])                 # O(n) find maximum key
+    D = [None] * u                                  # O(u) direct access array
+    for x in A:                                     # O(n) insert items
+        D[x.key] = x
+    i = 0
+    for key in range(u):                            ## O(u) read out items in order
+        if D[key] is not None:
+            A[i] = D[key]
+            i += 1
+
+
+#Counting Sort
+#link chain to each direst access array index (allows dupllicate keys)
+#stable(items appear in the same order in the output as the input) - seq. queue interface
+def counting_sort(A):
+    """Sort A assuming items have non-negative keys"""
+    u = 1 + max([x.key for x in A])                 # O(n) find maximum key
+    D = [[] for i in range(u)]                      # O(u) direct access array of chains
+    for x in A:                                     # O(n) insert into chain at x.key
+        D[x.key].append(x)
+    i = 0
+    for chain in D:                                 # O(u) read out items in order
+        for x in chain:
+            A[i] = x
+            i += 1
+    
+#counting sort alt implementation -> compute final index location of each item via cumulative sums
+def counting_sort(A):
+    """Sort A assuming items have non-negative keys"""
+    u= 1 + max([x.key for x in A])                  # O(n) find maximum key
+    D = [0] * u                                     # O(u) direct access array
+    for x in A:                                     # O(n) count keys
+        D[x.key] += 1
+    for k in range(1, u):                           # O(u) cumulative sums
+        D[k] += D[k - 1]
+    for x in list(reversed(A)):                     # O(n) move items into place
+        A[D[x.key] - 1] = x
+        D[x.key] -= 1
+
+
+
+#Tuple Sort  - break int keys into parts, sort each part
+#uses a stable sorting algorithm as a subroutine to repeatedly sort the objects, first according to the least important key, then the second least important key, all the way up to most important key
+#similar to how one might sort on multiple rows of a spreadsheet by different columns
+#Need stalbe algo - only correct if previous rounds of sorting are maintained
+
+
+#Radix Sort
+#Increase rangeof int sets you can sort in linear time, break into multiples of powers of n
+#representing each item key its sequence of digits when represented in base n
+#sort digit representations with tuple sort by sorting on each digit in order from least significant to most significant digit using counting sort.
+def radix_sort(A):
+    """Sort A assuming items have non-negative keys"""
+    n = len(A)
+    u = 1 + max([x.key for x in A])                 # O(n) find maximum key
+    c = 1 + (u.bit_length() // n.bit_length())
+    class Obj: pass
+    D = [Obj() for a in A]
+    for i in range(n):                              # O(nc) make digit tuples
+        D[i].digits = []
+        D[i].item = A[i]
+        high = A[i].key
+        for j in range(c):                          # O(c) make digit tuple
+            high, low = divmod(high, n)
+            D[i].digits.append(low)
+    for i in range(c):                              # O(nc) sort each digit
+        for j in range(n):                          # O(n) assign key i to tuples
+            D[j].key = D[j].digits[i]
+        counting_sort(D)                            # O(n) sort on digit i
+    for i in range(n):                              # O(n) output to A
+        A[i] = D[i].item
+
+#https://codepen.io/mit6006/pen/LgZgrd
+
