@@ -876,3 +876,279 @@ class Set_Binary_Tree(Binary_Tree):         # Binary Search Tree
         return ext.item
 
 
+
+#R7
+#Balanced Binary Tree  -- height (log n)
+#AVL Tree == every node is height-balanced
+#left and right subtrees differ in height by at most 1
+#Skew is height of right subtree minus height of left subtree [-1, 0, 1] = balanced
+
+#Rotations - O(1)
+#change structure of tree for balance without changing traversal order
+"""
+_____<D>__      rotate_right(<D>)     __<B>_____
+ __<B>__     <E>        =>            <A>    __<D>__
+  <A>  <C>    /\                       /\     <C> <E> 
+  /\    /\  /___\       <=            /__\     /\  /\ 
+/___\ /___\           rotate_left(<B>)        /__\/__\ 
+
+"""
+#Can change depth of nodes and preserve traversal order
+def subtree_rotate_right(D):
+    assert D.left
+    B, E = D.left, D.right
+    A, C = B.left, B.right
+    D, B = B, D
+    D.item, B.item = B.item, D.item
+    B.left, B.right = A, D
+    D.left, D.right = C, E
+    if A: A.parent = B
+    if E: E.parent = D
+    # B.subtree_update()
+    # D.subtree_update()
+
+def subtree_rotate_left(B): #O(1)
+    assert B.right
+    A, D = B.left, B.right
+    C, E = D.left, D.right
+    B,D = D,B
+    B.item, D.item = D.item, B.item
+    D.left, D.right = B, E 
+    B.left, B.right = A, C 
+    if A: A.parent = B
+    if E: E.parent = D
+    # B.subtree_update()
+    # D.subtree_update()
+
+#Maintain Height Balance
+#Addition or deletion of a leaf can change height balance, affects ancestors of leaf
+#Walk from leaf imbalance to the root, rebalance along the way (at most O(log n) rotations)
+def skew(A):                            # O(?)
+        return height(A.right) - height(A.left)
+
+def rebalance(A):
+    if A.skew() == 2:
+        if A.right.skew() < 0:
+            A.right.subtree_rotate_right()
+        A.subtree_rotate_left()
+    elif A.skew() == -2:
+        if A.left.skew() > 0:
+            A.left.subtree_rotate_left()
+        A.subtree_rotate_right()
+    
+def maintain(A):                            #O(h)
+    A.rebalance()
+    A.subtree_update()
+    if A.parent: A.parent.maintain()
+
+def height(A):                          # Omega(n)
+    if A is None: return -1
+    return 1 + max(height(A.left), height(A.right))
+
+#Rebalance takes omega(log n), to rebalance at most O(log n) time we need to eval height in O(1) time
+#Speed up via augmentation: each node stores and maintains the value of its own subtree height
+#eval now reading stored value in O(1) time - when tree structure changes, update to recompute height at nodes
+def height(A):
+    if A:   return A.height
+    else:   return -1
+
+    def subtree_update(A):                  # O(1)
+        A.height = 1 + max(height(A.left), height(A.right))
+
+#Store added info at each node to quickly query in future
+#To augment nodes of binary tree, need: defined property subtree corresponds to,
+#and show how to compute in O(1) time from the augmentation children
+
+
+#Binary Node Implementation with AVL Balancing
+def height(A):
+    if A:   return A.height
+    else:   return -1
+
+class Binary_Node:
+    def __init__(A, x):                     # O(1)
+        A.item   = x
+        A.left   = None
+        A.right  = None
+        A.parent = None
+        A.subtree_update()
+
+    def subtree_update(A):                  # O(1)
+        A.height = 1 + max(height(A.left), height(A.right))
+    
+    def skew(A):                            # O(1)
+        return height(A.right) - height(A.left)
+    
+    def subtree_iter(A):                    # O(n)
+        if A.left:   yield from A.left.subtree_iter()
+        yield A
+        if A.right:  yield from A.right.subtree_iter()
+    
+    def subtree_first(A):                   # O(log n)
+        if A.left:  return A.left.subtree_first()
+        else:       return A
+
+    def subtree_last(A):                    # O(log n)
+        if A.right: return A.right.subtree_last()
+        else:       return A
+
+    def successor(A):                       # O(log n)
+        if A.right: return A.right.subtree_first()
+        while A.parent and (A is A.parent.right):
+            A = A.parent
+        return A.parent
+    
+    def predecessor(A):                     # O(log n)
+        if A.left:  return A.left.subtree_last()
+        while A.parent and (A is A.parent.left):
+            A = A.parent
+        return A.parent
+
+    def subtree_insert_before(A, B):        # O(log n)
+        if A.left:
+            A = A.left.subtree_last()
+            A.right, B.parent = B, A
+        else:
+            A.left,  B.parent = B, A
+        A.maintain()
+
+    def subtree_insert_after(A, B):         # O(log n)
+        if A.right:
+            A = A.right.subtree_first()
+            A.left, B.parent =B,A 
+        else:
+            A.right, B.parent =B,A 
+        A.maintain()
+
+    def subtree_delete(A):                  # O(log n)
+        if A.left or A.right:
+            if A.left:  B = A.predecessor()
+            else:       B = A.successor()
+            A.item, B.item = B.item, A.item
+            return B.subtree_delete()
+        if A.parent:
+            if A.parent.left is A:  A.parent.left  = None
+            else:                   A.parent.right = None
+            A.parent.maintain()
+        return A
+    
+    def subtree_rotate_right(D):            # O(1)
+        assert D.left
+        B, E = D.left, D.right
+        A, C = B.left, B.right
+        D, B = B, D
+        D.item, B.item = B.item, D.item
+        B.left, B.right = A, D
+        D.left, D.right = C, E
+        if A: A.parent = B
+        if E: E.parent = D
+        B.subtree_update()
+        D.subtree_update()
+    
+    def subtree_rotate_left(B):             # O(1)
+        assert B.right
+        A, D = B.left, B.right
+        C, E = D.left, D.right
+        B, D = D, B
+        B.item, D.item = D.item, B.item
+        D.left, D.right = B, E 
+        B.left, B.right = A, C 
+        if A: A.parent = B
+        if E: E.parent = D
+        B.subtree_update()
+        D.subtree_update()
+
+    def rebalance(A):                       # O(1)
+        if A.skew() == 2:
+            if A.right.skew() < 0:
+                A.right.subtree_rotate_right()
+            A.subtree_rotate_left()
+        elif A.skew() == -2:
+            if A.left.skew() > 0:
+                A.left.subtree_rotate_left()
+            A.subtree_rotate_right()
+    
+    def maintain(A):                        # O(log n)
+        A.rebalance()
+        A.subtree_update()
+        if A.parent:    A.parent.maintain()
+    
+
+#The Binary_Node maintains balance; supports Binary_Tree_Set operations in O(log n) time, except build and iter (O(n log n), O(n) respectively)
+#This forms AVL Tree == Set AVL
+
+#To use Binary Tree to implement Sequence interface, we use traversal order of tree to store items in seq order
+#Find on seq tree would be O(n) time, use stored subtree size to compare index
+# and then recurse on correct side
+class Size_Node(Binary_Node):
+    def subtree_update(A):                  # O(1)
+        super().subtree_update()
+        A.size = 1
+        if A.left:   A.size += A.left.size
+        if A.right:  A.size += A.right.size
+    
+    def subtree_at(A, i):                   # O(h)
+        assert 0 <= i
+        if A.left:      L_size = A.left.size
+        else:           L_size = 0
+        if i < L_size:  return A.left.subtree_at(i)
+        elif i > L_size: return A.right.subtree_at(i - L_size - 1)
+        else:           return A
+
+#can find ith node in balanced binary tree in O(log n) time
+#Can build tree from input seq in O(n) time -- Seequence AVL
+
+#https://codepen.io/mit6006/pen/NOWddZ
+
+class Seq_Binary_Tree(Binary_Tree):
+    def __init__(self): super().__init__(Size_Node)
+
+    def build(self, X):
+        def build_subtree(X, i, j):
+            c = (i + j) // 2
+            root = self.Node_Type(A[c])
+            if i < c:
+                root.left = build_subtree(X, i, c - 1)
+                root.left.parent = root
+            if c < j:
+                root.right = build_subtree(X, c + 1, j)
+                root.right.parent = root
+            root.subtree_update()
+            return root
+        self.root = build_subtree(X, 0, len(X) - 1)
+        self.size = self.root.size
+    
+    def get_at(self, i):
+        assert self.root
+        return self.root.subtree_at(i).item
+    
+    def set_at(self, i, x):
+        assert self.root
+        self.root.subtree_at(i).item = x
+    
+    def insert_at(self, i, x): 
+        new_node = self.Node_Type(x) 
+        if i==0:
+            if self.root:
+                node = self.root.subtree_first()
+                node.subtree_insert_before(new_node)
+            else:
+                self.root = new_node
+        else:
+            node = self.root.subtree_at(i - 1)
+            node.subtree_insert_after(new_node)
+        self.size += 1
+    
+    def delete_at(self, i):
+        assert self.root
+        node = self.root.subtree_at(i)
+        ext = node.subtree_delete()
+        if ext.parent is None:  self.root = None
+        self.size -= 1
+        return ext.item
+
+    def insert_first(self, x):  self.insert_at(0, x)
+    def delete_first(self):     return self.delete_at(0)
+    def insert_last(self, x):   self.insert_at(len(self), x)
+    def delete_last(self):      return self.delete_at(len(self) - 1)
+
