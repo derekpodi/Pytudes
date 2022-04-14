@@ -1,6 +1,6 @@
 #https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/lecture-notes/
 
-
+#R1
 class StaticArray:
     def __init__(self, n):
         self.data = [None] * n
@@ -29,8 +29,9 @@ def birthday_match(students):
                  return (name1, name2)
         record.set_at(k, (name1, bday1))
     return None
+   
 
-
+#R2
 class Array_Seq: 
     def __init__(self):      #O(1)
         self.A = [] 
@@ -77,7 +78,6 @@ class Array_Seq:
     def delete_last(self):      return self.delete_at(len(self) - 1)
 
 
-
 class Linked_List_Node:
     def __init__(self, x):          #O(1)
         self.item = x
@@ -88,8 +88,7 @@ class Linked_List_Node:
         assert self.next
         return self.next.later_node(i - 1)
 
-    
-    
+
 class Linked_List_Seq:
     def __init__(self):             #O(1)
         self.head = None
@@ -150,8 +149,6 @@ class Linked_List_Seq:
     def delete_last(self):      return self.delete_at(len(self) - 1)
 
 
-    
-    
 class Dynamic_Array_Seq(Array_Seq):
     def __init__(self, r = 2):              #O(1)
         super().__init__()
@@ -205,7 +202,6 @@ class Dynamic_Array_Seq(Array_Seq):
     def delete_first(self):     return self.delete_at(0)
 
 
-    
 
 # Non efficient implementation of SEQ -> SET
 def Set_from_Seq(seq):
@@ -270,7 +266,6 @@ def Set_from_Seq(seq):
                 yield x
                 x = self.find_next(x.key)
     return set_from_seq
-
 
 
 #R3
@@ -409,20 +404,23 @@ class DirectAccessArray:
     def insert(self, x):    self.A[x.key] = x           # O(1)
     def delete(self, k):    self.A[k] = None            # O(1)
     def find_next(self, k):
-        for i in range(k, len(self.A)):                 # O(u)
-            if A[i] is not None:
+        for i in range(k, len(A)):                 # O(u)
+            if self.A[i] is not None:
                 return A[i]
     def find_max(self):
-        for i in range(len(self.A) - 1, -1, -1):        # O(u)
-            if A[i] is not None:
+        for i in range(len(A) - 1, -1, -1):        # O(u)
+            if self.A[i] is not None:
                 return A[i]
     def delete_max(self):
-        for i in range(len(self.A) - 1, -1, -1):        # O(u)
+        for i in range(len(A) - 1, -1, -1):        # O(u)
             x = A[i]
             if x is not None:
                 A[i] = None
                 return x
 
+from locale import ABDAY_1
+import random
+from re import A
 #Hash collisions if more points than space, pigeonhole principle. 
 #Store collisions somewhere else in same direct accesss array or elsewhere. Open addressing(in practice) or chaining
 #Chain as collision resolution strategy - allow find, insert, delete
@@ -433,7 +431,7 @@ class Hash_Table_Set:
         self.size = 0
         self.r = r                                      # 100/self.r = fill ratio
         self.p = 2**31 - 1
-        self.a = randint(1, self.p - 1)
+        self.a = random.randint(1, self.p - 1)
         self._compute_bounds()
         self._resize(0)
     
@@ -600,4 +598,5 @@ def radix_sort(A):
         A[i] = D[i].item
 
 #https://codepen.io/mit6006/pen/LgZgrd
+
 
