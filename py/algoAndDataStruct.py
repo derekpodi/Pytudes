@@ -1152,3 +1152,153 @@ class Seq_Binary_Tree(Binary_Tree):
     def insert_last(self, x):   self.insert_at(len(self), x)
     def delete_last(self):      return self.delete_at(len(self) - 1)
 
+
+#R8
+#Priority Queues
+"""
+algorithm_|_data structure   _|_insertion_|_extraction_|_total       
+Selection | Sort Array        | O(1)      | O(n)       | O(n^2)
+Insertion | Sort Sorted Array | O(n)      | O(1)       | O(n^2)
+Heap Sort | Binary Heap       | O(log n)  | O(log n)   | O(n log n)
+"""
+#Base class - interface of priority queue, maintains internal array A of 
+# items, implements insert() and delete_max() --subclasses
+class PriorityQueue:
+    def __int__(self):
+        self.A = []
+
+    def insert(self, x):
+        self.A.append(x)
+    
+    def delete_max(self):
+        if len(self.A) < 1:
+            raise IndexError('pop from empty priority queue')
+        return self.A.pop()                     #NOT correct on its own
+    
+    @classmethod
+    def sort(Queue, A):
+        pq = Queue()                            #make empty priority queue
+        for x in A:                             #n x T_insert
+            pq.insert(x)
+        out = [pq.delete_max() for _ in A]      #n x T_delete_max
+        out.reverse()
+        return out
+
+#sort two loops over array: one to insert all elements, another to populate 
+# the output array with successive maxima in reverse order
+
+
+#Array Heaps
+#Implementations of Selection sort and Merge Sort from the perspective of priority queues
+
+class PQ_Array(PriorityQueue):                  #Selection Sort
+    # PriorityQueue.insert already correct: appends to end of self.A
+    def delete_max(self):                       # O(n)
+        n, A, m = len(self.A), self.A, 0
+        for i in range(1, n):
+            if A[m].key < A[i].key:
+                m = i
+        A[m], A[n] = A[n], A[m]                 # swap max with end of array
+        return super().delete_max()             # pop from end of array
+
+
+class PQ_SortedArray(PriorityQueue):            #Insertion Sort
+    # PriorityQueue.delete_max already correct: pop from end of self.A
+    def insert(self, *args):                    # O(n)
+        super().insert(*args)                   # append to end of array
+        i, A = len(self.A) - 1, self.A          # restore array ordering
+        while 0 < i and A[i + 1].key < A[i].key:
+            A[i + 1], A[i] = A[i], A[i+1]
+            i -= 1
+
+#use *args to allow insert to take one argument or zero args - zero args used when making priority queues in place
+
+
+#Binary Heaps
+#takes advantage of the logarithmic height of a complete binary tree to improve performance
+#max_heapify_up and max_heapify_down handle bulk of work
+class PQ_Heap(PriorityQueue):
+    def insert(self, *args):                    # O(log n)
+        super().insert(*args)                   #append to the end of array
+        n, A = self.n, self.A
+        max_heapify_up(A, n, n-1)
+    
+    def delete_max(self):                       # O(log n)
+        n, A = self.n, self.A
+        A[0], A[n] = A[n], A[0]
+        max_heapify_down(A, n, 0)
+        return super().delete_max()             #pop from end of array
+
+#compute parent and child indices, given an index representing a node in a tree whose root is the first element of the array
+def parent(i):
+    p = (i-1) // 2
+    return p if 0 < i else i
+
+def left(i, n):
+    l = 2 * i + 1
+    return l if l < n else i
+
+def right(i, n):
+    r = 2 * i + 2
+    return r if r < n else i
+
+#Assume nodes in A[:n] satisfy Max-Heap Property except for node A[i]
+#must maintain the root = largest key, move up or down to satisfy Max-Heap Property list
+def max_heapify_up(A, n, c):                    # T(c) = O(log c)
+    p = parent(c)                               # O(1) index of parent (or c)
+    if A[p].key < A[c].key:                     # O(1) compare
+        A[c], A[p] = A[p], A[c]                 # O(1) swap parent
+        max_heapify_up(A, n, p)                 # T(p) = T(c/2) recursive call on parent
+
+def max_heapify_down(A, n, p):                  # T(p) = O(log n - log p)
+    l, r = left(p, n), right(p, n)              # O(1) indices of children (or p)
+    c = l if A[r].key < A[l].key else r         # O(1) index of largest child
+    if A[p].key < A[c].key:                     # O(1) compare
+        A[c], A[p] = A[p], A[c]                 # O(1) swap child
+        max_heapify_down(A, n, c)               # T(c) recursive call on child
+
+
+# O(n) Build Heap
+#repeated max_heap insertion takes O(n log n) time
+#Build in linear time if whole array is accessible - construct in reverse level order(leafs to root)
+# while maintaining that all nodes processed maintain Max-Heap Property by running max_heapify_down at each node
+# last half of array are all leaves, so don't need to run max_heapify_down on them
+def build_max_heap(A):
+    n = len(A)
+    for i in range(n // 2, -1, -1):              # O(n) loop backward over array
+        max_heapify_down(A, n, i)               # O(log n - log i) fix max heap
+
+
+#In-Place Heaps
+#modify base class PriorityQueue to take an entire array A of elements,
+# and maintain the queue itself in the prefix of the first n elements of A(where n <= len(A))
+#Insert now inserts the item already stored in A[n], incorporates it into the now-larger queue
+#Delete_max deposits output into A[n] before decreasing size
+class PriorityQueue:
+    def __init__(self, A):
+        self.n, self.A = 0, A
+    
+    def insert(self):                           #absorb element A[n] into the queue
+        if not self.n < len(self.A):
+            raise IndexError('insert into full priority queue')
+        self.n += 1
+
+    def delete_max(self):                       #remove element A[n -1] from the queue
+        if self.n < 1:
+            raise IndexError('pop from empty priority queue')
+        self.n -= 1                             #Not correct on its own!
+    
+    @classmethod
+    def sort(Queue, A):
+        pq = Queue(A)                           #make empty priority queue
+        for i in range(len(A)):                 # n x T_insert
+            pq.insert()
+        for i in range(len(A)):                 # n x T_delete_max
+            pq.delete_max()
+        return pq.A
+    
+#PQ_Heap known as heap sort
+
+#https://codepen.io/mit6006/pen/KxOpep
+
+
