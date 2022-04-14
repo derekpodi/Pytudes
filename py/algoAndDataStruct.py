@@ -600,3 +600,279 @@ def radix_sort(A):
 #https://codepen.io/mit6006/pen/LgZgrd
 
 
+
+#R6
+#Binary Trees - tree graph of binary nodes
+# contains pointer to an item stored at node, pointer to parent node (possible none), 
+# pointer to left child node (possible none), pointer to a right child node (possible none)
+class Binary_Node:
+    def __init__(A, x):                             # O(1)
+        A.item = x
+        A.left   = None
+        A.right  = None
+        A.parent = None
+        # A.subtree_update()
+
+#One root node (no parent), traverse from leaf(no children) to parent via pointers
+#Nodes set passed in traversal to root are called ancestors
+#Depth of node <X> in subtree rooted at <R> is length of path from <X> back to <R>
+#Height of node <X> is max depth of any node in the subtree rooted at <X>
+
+#Binary Tree - no node is more than O(log n) pointer hops from root
+#keep height low - operations run O(log n) rather than linear
+
+#Traversal Order
+#Natural order based on left and right children
+#Every node in the left subtree of node <X> comes before <X> in the traversal order; and
+#every node in the right subtree of node <X> comes after <X> in the traversal order
+#recursively list nodes in left subtree, root, recursive right subtree - O(n)
+def subtree_iter(A):                                # O(n)
+    if A.left:   yield from A.left.subtree_iter()
+    yield A
+    if A.right:  yield from A.right.subtree_iter()
+
+#Tree Navigation
+def subtree_first(A):                               # O(h)
+        if A.left:  return A.left.subtree_first()
+        else:       return A
+
+def subtree_last(A):                                # O(h)
+        if A.right: return A.right.subtree_last()
+        else:       return A
+
+#Next node in traveral order == successor
+#Previous node in traveersal order == predecessor
+def successor(A):                       # O(h)
+    if A.right: return A.right.subtree_first()
+    while A.parent and (A is A.parent.right):
+        A = A.parent
+    return A.parent
+
+def predecessor(A):                     # O(h)
+    if A.left:  return A.left.subtree_last()
+    while A.parent and (A is A.parent.left):
+        A = A.parent
+    return A.parent
+
+#Dynamic Operations on BT
+#To add or remove items in binary tree, must take care to preserve traversal order
+#To add before in traversal order: add as left child, if left child spot is taken; add to right child of subtree from left child node
+def subtree_insert_before(A, B):        # O(h)
+    if A.left:
+        A = A.left.subtree_last()
+        A.right, B.parent = B, A
+    else:
+        A.left,  B.parent = B, A
+    # A.maintain()
+
+def subtree_insert_after(A, B):
+    if A.right:
+        A = A.right.subtree_first()
+        A.left,  B.parent = B, A
+    else:
+        A.right, B.parent = B, A
+    # A.maintain()
+
+#To delete node: if leaf, simply delete. 
+# If not a leaf, swap the node's item with the item in the node's successor or predecessor down the tree until the item is in a leaf which can be removed
+def subtree_delete(A):                  # O(h)
+    if A.left or A.right:               # A is not a leaf
+        if A.left:  B = A.predecessor()
+        else:       B = A.successor()
+        A.item, B.item = B.item, A.item
+        return B.subtree_delete()
+    if A.parent:                        #A is a leaf
+        if A.parent.left is A:  A.parent.left = None
+        else:                   A.parent.right = None
+        # A.parent.maintain()
+    return A
+
+
+#Binary Node Full Implementation
+class Binary_Node:
+    def __init__(A, x):                 # O(1)
+        A.item   = x
+        A.left   = None
+        A.right  = None
+        A.parent = None
+        # A.subtree_update()
+    
+    def subtree_iter(A):                # O(n)
+        if A.left:   yield from A.left.subtree_iter()
+        yield A
+        if A.right:  yield from A.right.subtree_iter()
+    
+    def subtree_first(A):               # O(h)
+        if A.left:  return A.left.subtree_first()
+        else:       return A
+
+    def subtree_last(A):                # O(h)
+        if A.right: return A.right.subtree_last()
+        else:       return A
+
+    def successor(A):                       # O(h)
+        if A.right: return A.right.subtree_first()
+        while A.parent and (A is A.parent.right):
+            A = A.parent
+        return A.parent
+    
+    def predecessor(A):                     # O(h)
+        if A.left:  return A.left.subtree_last()
+        while A.parent and (A is A.parent.left):
+            A = A.parent
+        return A.parent
+
+    def subtree_insert_before(A, B):        # O(h)
+        if A.left:
+            A = A.left.subtree_last()
+            A.right, B.parent = B, A
+        else:
+            A.left,  B.parent = B, A
+        # A.maintain()
+    
+    def subtree_insert_after(A, B):         # O(h)
+        if A.right:
+            A = A.right.subtree_first()
+            A.left, B.parent =B,A 
+        else:
+            A.right, B.parent =B,A
+        # A.maintain()
+    
+    def subtree_delete(A):                  # O(h)
+        if A.left or A.right:
+            if A.left:  B = A.predecessor()
+            else:       B = A.successor()
+            A.item, B.item = B.item, A.item
+            return B.subtree_delete()
+        if A.parent:
+            if A.parent.left is A:  A.parent.left = None
+            else:                   A.parent.right = None
+            # A.parent.maintain()
+        return A
+    
+
+#Top Level Data Structure
+#previous within binary_tree class to apply to any subtree
+#Here is general binary tree DS that stores a pointer to its root, and number of items it stores
+class Binary_Tree:
+    def __init__(T, Node_Type = Binary_Node):
+        T.root = None
+        T.size = 0
+        T.Node_Type = Node_Type
+
+    def __len__(T): return T.size
+    def __iter__(T):
+        if T.root:
+            for A in T.root.subtree_iter():
+                yield A.item
+
+
+#Exercise Problem
+"""
+#Build Tree from arrray keeping index as traverse order and height O(log n)
+#Solve by setting middle as root, follow subtree traverse rules, balanced tree height for log n
+
+def build(X):
+    A = [x for x in X]
+    def build_subtree(A, i, j):
+        c = (i+j) // 2
+        root = self.Node_Type(A[c])
+        if i < c:                   # needs to store more items in left subtree
+            root.left = build_subtree(A, i, c - 1)
+            root.left.parent = root
+        if c < j:                   # needs to store more items in right subtree
+            root.right = build_subtree(A, c + 1, j)
+            root.right.parent = root
+        return root
+    self.root = build_subtree(A, 0, len(A)-1)   
+"""
+
+#Binary Tree to implement a Set interface
+#use traversal order to store the items sorted in increasing key order
+#Binary Search Tree Property: left sub keys < node key < right sub keys
+#can walk tree to find query key, recursing appropriate side
+class BST_Node(Binary_Node):                    #Set Binary Tree == BST
+    def subtree_find(A, k):                     # O(h)
+        if k < A.item.key:
+            if A.left:  return A.left.subtree_find(k)
+        elif k > A.item.key:
+            if A.right: return A.right.subtree_find(k)
+        else:           return A
+        return None
+
+    def subtree_find_next(A, k):                 # O(h)
+        if A.item.key <= k:
+            if A.right: return A.right.subtree_find_next(k)
+            else:       return None
+        elif A.left:
+            B = A.left.subtree_find_next(k)
+            if B:       return B
+        return A
+
+    def subtree_find_prev(A, k):                # O(h)
+        if A.item.key >= k: 
+            if A.left:  return A.left.subtree_find_prev(k)
+            else:       return None
+        elif A.right:
+            B = A.right.subtree_find_prev(k)
+            if B:       return B
+        return A
+    
+    def subtree_insert(A, B):                   # O(h)
+        if B.item.key < A.item.key:
+            if A.left:  A.left.subtree_insert(B)
+            else:       A.subtree_insert_before(B)
+        elif B.item.key > A.item.key:
+            if A.right: A.right.subtree_insert(B)
+            else:       A.subtree_insert_after(B)
+        else:    A.item = B.item
+
+class Set_Binary_Tree(Binary_Tree):         # Binary Search Tree
+    def __init__(self): super().__init__(BST_Node)
+
+    def iter_order(self): yield from self
+
+    def build(self, X):
+        for x in X: self.insert(x)
+
+    def find_min(self):
+        if self.root:   return self.root.subtree_first().item
+
+    def find_max(self):
+        if self.root:   return self.root.subtree_last().item
+
+    def find(self, k):
+        if self.root:
+            node = self.root.subtree_find(k)
+            if node:    return node.item
+    
+    def find_next(self, k):
+        if self.root:
+            node = self.root.subtree_find_next(k)
+            if node:    return node.item
+    
+    def find_prev(self, k):
+        if self.root:
+            node = self.root.subtree_find_prev(k)
+            if node:    return node.item
+
+    def insert(self, x):
+        new_node = self.Node_Type(x)
+        if self.root:
+            self.root.subtree_insert(new_node)
+            if new_node.parent is None: return False
+        else:
+            self.root = new_node
+        self.size += 1
+        return True
+    
+    def delete(self, k):
+        assert self.root
+        node = self.root.subtree_find(k)
+        assert node
+        ext = node.subtree_delete()
+        if ext.parent is None:  self.root = None
+        self.size -= 1
+        return ext.item
+
+
