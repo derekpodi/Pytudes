@@ -1302,3 +1302,101 @@ class PriorityQueue:
 #https://codepen.io/mit6006/pen/KxOpep
 
 
+
+#R9
+#Graphs
+
+#A graph G = (V, E) == mathematical object comprising a set of vertices V (also called nodes)
+# and a set of edges E, each edge E is a two-element subset of vertices from V
+
+#Vertex and edge are incident or adjacent if the edge contains the vertex
+
+#Edge is directed if the subset pair is directed (u, v) one way
+#Edge is undirected if subset pair is unordered {u, v}  set - (u,v), (v, u)
+
+#Edge follow tail ---> head, outgoing ---> incoming edge
+# undirected graphs every edge is incoming and outgoing
+
+#In degree and out degree of vertex v denotes # of incoming and outgoing edges connected to v
+# degree generally refers to out-degree
+
+#Path in a graph is a sequence of vertices such that for every ordered pair 
+# of vertices(vi, vi+1) there exists an outgoing edge in the graph from vi to vi+1
+#Length of path is # of edges in the path (1 less that # of vertices)
+
+#Strongly Connected if path from every node to every other node in graph(undirected)
+
+
+#Graph Representations
+#Common to store the adjacencies of vertex v, the set of vertices that are accessible from v via a single outgoing edge
+#Adjacency list - outgoing neighbor vertices fro each vertex
+#can store within direct access array; array slot i points to adjacency list of vertex labeled i
+A1 =    [[1],       #0      #Ordered example
+        [2],        #1
+        [0],        #2
+        [4],        #3
+        []]         #4 
+A2 =    [[1, 4, 3], #0      #Unordered example
+        [0],        #1
+        [3],        #2
+        [0, 2],     #3
+        [0]]        #4 
+
+#array structure useful to loop over edges incident to a vertex
+# edges appear at most twice; obstacle is determining if edge in graph 
+# takes omega(|V|) time. Overcome by using hash table (edge check O(1))
+S1 = {0: {1},       
+      1: {2},       
+      2: {0},       
+      3: {4}}
+S2 = {0: {1, 3, 4}, #0 
+      1: {0},       #1 
+      2: {3},       #2 
+      3: {0, 2},    #3 
+      4: {0}}       #4
+
+
+#Breadth-First Search
+#Given a graph, a common query is to find the vertices reachable by 
+# a path from a queried vertex s.
+#A breadth-first search (BFS) from s discovers the level sets of s: level Li 
+# is the set of vertices reachable from s via a shortest path of length i (not reachable via a path of shorter length).
+
+#i=0, L = {s} (the vertex itself). i + 1 is any vertex reachable from from s,
+# it must have an incoming edge from a vertex whose shortest path from s has length i, so it is contained in level Li.
+
+#Parent labels (pointers) together determine a BFS tree from vertex s, 
+# containing some shortest path from s to every other vertex in the graph.
+def bfs(Adj, s):                            # Adj: adjacency list, s: starting vertex
+    parent = [None for v in Adj]            # O(V) (use hash if unlabeled)
+    parent[s] = s                           # O(1) root
+    level = [[s]]                           # O(1) initialize levels
+    while 0 < len(level[-1]):               # O(?) last level contains vertices
+        level.append([])                    # O(1) amortized, make new level
+        for u in level[-2]:                 # O(?) loop over last full level
+            for v in Adj[u]:                # O(Adj[u]) loop over neighbors
+                if parent[v] is None:       # O(1) parent not yet assigned
+                    parent[v] = u           # O(1) assign parent from level[-2]
+                    level[-1].append(v)     # O(1) amortized, add to border
+    return parent
+
+#Inner loop repeated at most O(|E|) times, outer loop cycles all deg(v) outgoing edges from vertex v
+#Breadth-First Search runs in O(|V| + |E|) time
+
+
+#Use parent labels returned by breadth-first search to construct shortest path from vertex s to vertex t
+# follow parent pointers from t backward through the graph to s
+# code to compute shortest path from s to t (worst case run time O(|V| + |E|))
+def unweighted_shortest_path(Adj, s, t):
+    parent = bfs(Adj, s)                    # O(V+E) BFS tree from s
+    if parent[t] is None:                   # O(1) t reachable from s?
+        return None                         # O(1) no path
+    i = t                                   # O(1) label of current vertex
+    path = [t]                              # O(1) initialize path
+    while i != s:                           # O(V) walk back to s
+        i = parent[i]                       # O(1) move to parent
+        path.append(i)                      # O(1) amortized add to path
+    return path[::-1]                       # O(V) return reversed path
+
+
+
