@@ -1607,3 +1607,77 @@ def DAG_Relaxation(Adj, w, s):          # Adj: adjacency list, w: weights, s: st
 
 
 
+
+
+#R12
+#Bellman-Ford
+#General graph that allows cycles and negative weights
+#Lecture presents mod of Bellman-Ford, based on graph duplication and DAG Relaxation
+# that solves SSSP in O(|V|*|E|) time and space
+#Can return a negative-weight cycle reachable on a path from s to v,
+#  for any vertex v with δ(s, v) = −∞.
+
+#If δ(s, v) is finite, there exists a shortest path to v that is simple 
+#Since simple paths cannot repeat vertices, finite shortest paths contain at most |V | − 1 edges
+
+#Negative Cycle Witness
+#k-Edge Distance δk(s, v): the minimum weight of any path from s to v using ≤ k edges
+
+#Original Bellman-Ford detects negative weight cycle, but will not return cycle -inf
+
+#Init distance estimates, then relax every edge in the graph in |V|-1 rounds
+#If the graph does not contain negative-weight cycles, d(s, v) = δ(s, v) for all v ∈ V at termination; 
+# otherwise if any edge still relaxable (i.e., still violates the triangle inequality), the graph contains a negative weight cycle
+
+def bellman_ford(Adj, w, s):                    # Adj: adjacency list, w: weights, s: start
+    #Initialization
+    infinity = float('inf')                     # number greater than sum of all + weights
+    d =  [infinity for _ in Adj]                # shortest path estimates d(s, v)
+    parent = [None for _ in Adj]                # initialize parent pointers
+    d[s], parent[s] = 0, s                      # initialize source
+    # construct shortest paths in rounds
+    V = len(Adj)                                # number of vertices
+    for k in range(V-1):                        #relax all edges in (V-1) rounds
+        for u in range(V):                      # loop over all edges (u, v)    
+            for v in Adj[u]:                    # relax edge from u to v
+                try_to_relax(Adj, w, d, parent, u, v)
+    # check for negative weight cycles accessible from s
+    for u in range(V):                          # Loop over all edges (u, v)
+        for v in Adj[u]:
+            if d[v] > d[u] + w(u,v):            # If edge relax-able, report cycle
+                raise Exception('Ack! There is a negative weight cycle!')
+    return d, parent
+
+#relates to relax paradigm, but limits order in which edges can be processed
+#the algorithm relaxes every edge of the graph in a series of |V | − 1 rounds
+
+#At the end of relaxation round i of Bellman-Ford, d(s, v) = δ(s, v) for any vertex v that
+#has a shortest path from s to v which traverses at most i edges.
+
+'''
+If the graph does not contain negative weight cycles, some shortest path is simple, 
+and contains at most |V| - 1 edges as it traverses any vertex of the graph at most once. 
+Thus after |V| - 1 rounds of Bellman-Ford, d(s, v) = δ(s, v) for every vertex with a simple 
+shortest path from s to v. However, if after |V| - 1 rounds of relaxation, 
+some edge (u, v) still violates the triangle inequality, then there exists a path from s to v 
+using |V| edges which has lower weight than all paths using fewer edges. 
+Such a path cannot be simple, so it must contain a negative weight cycle.
+'''
+
+#This algorithm runs |V | rounds, where each round performs a constant amount of work for each 
+# edge in the graph, so Bellman-Ford runs in O(|V ||E|) time.
+
+#Note that this algorithm is different than the one presented in lecture in two important ways:
+#1) original Bellman-Ford only keeps track of one ‘layer’ of d(s,v) estimates in each round,
+#  while the lecture version keeps track of dk(s, v) for k ∈ {0, . . . , |V|}, which can be then used to construct negative-weight cycles.
+#2)distance estimate d(s, v) in round k of original Bellman-Ford does not necessarily equal 
+# dk(s, v), the k-edge distance to v computed in the lecture version
+# distance estimate d(s, v) in round k of original Bellman-Ford is never larger than dk(s, v), 
+# but it may be much smaller and converge to a solution quicker than the lecture version, so may be faster in practice.
+
+
+#Ex. Three houses in city, find max fun route for meeting location.
+#Run Bellman-Ford three times from source at each house. sum d(a,v) + d(b,v) + d(c,v) 
+#find vertex that mins this sum == intersection w/ max fun for each house
+
+
