@@ -1400,3 +1400,87 @@ def unweighted_shortest_path(Adj, s, t):
 
 
 
+
+#R10
+#Depth First Search
+#BFS discovers vertices reachable from queried vertex s level-by-level outward from s
+#Depth First Search (DFS) also finds all vertices reachable from s, but 
+# does so by searching undiscovered vertices as deep as possible before exploring other branches
+#DFS searches as far as possible from first neighbor of s before searching any other neighbor of s
+# Like BFS, DFS returns set of parent pointers for vertices reachable from s in 
+# the order the search discovered them - forming a DFS tree
+#Unlike BFS tree, a DFS tree will not represent shortest paths in an unweighted graph
+
+def dfs(Adj, s, parent = None, order = None):   # Adj: adjacency list, s: start
+    if parent is None:                      # O(1) initialize parent list
+        parent = [None for v in Adj]        # O(V) (use hash if unlabeled)
+        parent[s] = s                       # O(1) root
+        order = []                          # O(1) initialize order array
+    for v in Adj[s]:                        # O(Adj[s]) loop over neighbors
+        if parent[v] is None:               # O(1) parent not yet assigned
+            parent[v] = s                   # O(1) assign parent
+            dfs(Adj, v, parent, order)      # Recursive call
+    order.append(s)                         # O(1) amortized
+    return parent, order
+
+# recursive DFS for a graph represented using index labeled adjacency lists
+#DFS recursive call is performed only when a vertex does not have a parent pointer immediately before the call
+#DFS called on each vertex at most once; work done by each recursive search
+# from vertex v is proportional to the out-degree deg(v) of v.
+#Depth-First Search runs in O(|V | + |E|) time.
+
+
+#Full Graph Exploration
+#Not all vertices are reachable from a query vertex s. To explore each 
+# connected component in the graph by performing a search from each vertex 
+# in the graph that has not yet been discovered by the search.
+#Like adding auxilary vertex with outgoing edge to every vertex in the graph then running DFS/BFS from added vertex
+
+def full_dfs(Adj):                          # Adj: adjacency list
+    parent = [None for v in Adj]            # O(V) (use hash if unlabeled)
+    order = []                              # O(1) initialize order list
+    for v in range(len(Adj)):               # O(V) loop over vertices
+        if parent[v] is None:               # O(1) parent not yet assigned
+            parent[v] = v                   # O(1) assign self as parent (a root)
+            dfs(Adj, v, parent, order)      # DFS from v (BFS can also be used)
+    return parent, order
+
+#DFS is often used to refer to both a method to search a graph from a specific vertex,
+# and as a method to search an entire(graph_explore)
+
+#DFS Edge Classification
+#useful to classify edges of graph in relation to dfs tree.
+#Ex. graph edge from vertex u to v.
+#Call edge tree edge if edge is part of the DFS tree (parent[v] = u)
+#Other edges: back edge, forward edge, crosas edge. Respectively:
+# For u as a descendant of v, v is descendent of u, or neither are for each other
+    #track set of anscestors per vertex in DFS (as direct access array or hash)
+    # if v is an ancestor of s, it certifies a back edge, cycle in graph
+
+#Topological Sort
+#A directed graph containing no directed cycle is called 
+# a directed acyclic graph or a DAG
+#Topological sort of a DAG is a linear ordering of the vertices such that for 
+# each edge (u, v) in E, vertex u appears before vertex v in the ordering
+#In the dfs function, vertices are added to the order list in the order in which their recursive DFS call finishes
+
+#If graph is acyclic, order returned by DFS is the reverse of topo sort order
+#u before v, v will start and end before dfs(u) completes = v before u in order
+#v before u, u not called until v completes, else no path between(cyclic) = v added before u
+#Reversing the order returned by DFS will then repre- sent a topological sort order on the vertices.
+
+#Ex. 
+'''
+Run DFS on the graph(exploring the whole graph as in graph explore) 
+to obtain an order of DFS vertex finishing times in O(|V | + |E|) time. 
+While performing the DFS, keep track of the ancestors of each vertex in 
+the DFS tree, and evaluate if each new edge processed is a back edge. 
+If a back edge is found from vertex u to v, follow parent pointers back 
+to v from u to obtain a directed cycle in the graph to prove to the 
+principal that no such order exists. Otherwise, if no cycle is found, 
+the graph is acyclic and the order returned by DFS is the reverse of a 
+topological sort, which may then be returned to the principal.
+'''
+
+#https://codepen.io/mit6006/pen/dgeKEN
+
