@@ -1484,3 +1484,126 @@ topological sort, which may then be returned to the principal.
 
 #https://codepen.io/mit6006/pen/dgeKEN
 
+
+
+
+#R11
+#Weighted Graphs
+#Useful in many apps to apply numerical weight to edges in graph
+#Weighted graph is then a graph G(V, E) together with weight function w: E->R (map edges to real value weights)
+# weights often stored in adjacency matrix or edge obj list/set
+def w(u, v):    return W[u][v]
+
+W1 = {0: {1: -2},
+      1: {2:  0},
+      2: {0:  1},
+      3: {4:  3}}
+
+W2 ={0: {1: 1, 3: 2, 4: -1},    #0
+    1: {0: 1},                  #1 
+    2: {3: 0},                  #2 
+    3: {0: 2, 2: 0},            #3 
+    4: {0: -1}}                 #4
+
+#assume that a weight function w can be stored using O(|E|) space, 
+# and can return the weight of an edge in constant time
+#for edge e=(u,v), use notation w(u,v) interchangeably with w(e) to refer to the weight of an edge.
+
+
+#Weighted Shortest Paths
+#Weighted path is path in weighted graph where the weight of the path is 
+# the sum of the weights from edges in the path
+
+#Single Source weighted shortest paths problems ask for a lowest weight path 
+# to every vertex v in a graph from an input source vertex s (or indication no lowest weight path exists from s to v)
+
+#If all edges are positive and equal to each other: simply run BFS from 
+# s to min the number of edges traversed(thus minimizing the path weight)
+#When edges have different/non positive weights, cant apply BFS directly
+
+#Cycle (a path starting and ending at the same vertex) 
+#Graph with cycle w/ negative weight, shortest path may not exist (run cycle to lower weight)
+#Negative cyclic graph = say the shortest path from s to v is undefined, with weight −∞
+#If no path exists s to v is undefined, with weight +∞
+
+#Weighted Single Source Shortest Path Algorithms
+#BFS(unweighted), DAG Relaxation(DAG graph), 
+# Bellman-Ford(|V|*|E| time), Dijkstra(non-negative graph, log time)
+
+
+#Relaxation
+#relaxation algorithm searches for a solution to an optimization problem by 
+# starting with a solution that is not optimal, then iteratively improves 
+# the solution until it becomes an optimal solution to the original problem
+
+#Find the weight of shortest path from source s to each vertex v in graph
+# δ(s, v)       delta 
+#Init upper bound estimate d(v) on shortest path weight = +infinity
+# except d(s,s) = 0  source case
+# Repeatedly relax path estimate d(s,v); decrrease toward 
+# true shortest path weight δ(s, v) 
+#When d(s, v) = δ(s, v), we say that estimate d(s, v) is fully relaxed
+#If all path estimates relaxed, solved problem
+
+def general_relax(Adj, w, s):           # Adj: adjacency list, w: weights, s: start
+    d = [float('inf') for _ in Adj]     # shortest path estimates d(s, v)
+    parent = [None for _ in Adj]        # initialize parent pointers
+    d[s], parent[s] = 0, s              # initialize source
+    while some_edge_relaxable(Adj, w, d):       # repeat forever!
+        (u, v) = get_relaxable_edge(Adj, w, d)  # relax a shortest path estimate d(s, v)
+        try_to_relax(Adj, w, d, parent, u, v)
+    return d, parent                    # return weights, paths via parents
+
+#How do we ‘relax’ vertices and when do we stop relaxing(end algorithm)?
+#Relax an incoming edge to v from another vertex u to relax d(s,v) estimate
+#Maintain d(s,u) estimate upper bounds shortest path
+
+#Triangle Inequality
+#the true shortest path weight δ(s, v) can’t be larger than d(s, u) + w(u, v)
+# else edge (u,v) would be shorter path
+
+#any time d(s, u) + w(u, v) < d(s, v), we can relax the edge by setting
+#  d(s, v) = d(s, u) + w(u, v), strictly improving our shortest path estimate.
+
+def try_to_relax(Adj, w, d, parent, u, v):
+    if d[v] > d[u] + w(u, v):           # better path through vertex u
+        d[v] = d[u] + w(u, v)           # relax edge with shorter path found
+        parent[v] = u
+
+#Relaxing an edge maintains d(s, v) ≥ δ(s, v) for all v ∈ V .
+    #[estimates will never become smaller than true shortest paths]
+
+#If no edge can be relaxed, then d(s, v) ≤ δ(s, v) for all v ∈ V .
+    #[estimates w/ no edge can be relaxed, estimates == shortest path distances]
+
+
+#Exponential Relaxation
+#How many modifying edge relaxations could occur in an acyclic graph before 
+# all edges are fully relaxed?
+#If done in bad order, could perform exponential number of modifying relaxations
+#Want to avoid for polynomial modifying edge relaxations
+
+#DAG Relaxation
+#In a directed acyclic graph (DAG), there can be no negative weight cycles, 
+# so eventually relaxation must terminate.
+#Relax outgoing edge from every vertex once in topological sort order of 
+# the vertices correctly computes shortest paths
+
+def DAG_Relaxation(Adj, w, s):          # Adj: adjacency list, w: weights, s: start
+    _, order = dfs(Adj, s)              # run depth-first search on graph
+    order.reverse()                     # reverse returned order
+    d = [float('inf') for _ in Adj]     # shortest path estimates d(s, v)
+    parent = [None for _ in Adj]        # initialize parent pointers
+    d[s], parent[s] = 0, s              # initialize source
+    for u in order:                     # loop through vertices in topo sort
+        for v in Adj[u]:                # loop through out-going edges of u
+            try_to_relax(Adj, w, d, parent, u, v)   # try to relax edge from u to v
+    return d, parent                    # return weights, paths via parents
+
+#DAG Relaxation algorithm computes shortest paths in a directed acyclic graph.
+#topological sort order ensures that edges of the path are relaxed in the order in which they appear in the path
+#Since depth- first search runs in linear time and the loops relax each edge exactly once, 
+# this algorithm takes O(|V | + |E|) time.
+
+
+
