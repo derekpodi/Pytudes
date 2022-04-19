@@ -1825,3 +1825,65 @@ class PriorityQueue:                        # Binary Heap Implementation
 
 
 
+
+#R14
+#All Pairs Shortest Paths (APSP)
+
+#Single Source Shortest Paths (SSSP) Review
+#Define/construct graphm then run SSSP algorithm on that graph - generally want to use the
+# fastest SSSP algorithm that solves your problem.
+#Bellman-Ford applies to any weighted graph but is the slowest, prefer others when applicable
+
+#BFS            -- Runtime |V| + |E|  -- Restrictions: Unweighted, general graph
+#DAG Relaxation -- Runtime |V| + |E|  -- Restrictions: DAG graph, ANY weights
+#Dijkstra       -- Runtime |V| log |V| + |E|    -- Restrictions: Non-negative, general graph
+#Bellman-Ford   -- Runtime |V| * |E|  -- Restrictions: ANY weights, general graph, slower
+
+#Can also use algos to count connected componenets (with Full DFS or Full BFS), 
+# topologically sort vertices in a DAG (using DFS), and detect negative weight cycles w/ Bellman-Ford
+
+#APSP
+#Given a weighted graph G = (V, E, w), the (weighted) APSP problem asks for the minimum 
+# weight δ(u, v) of any path from u to v for every pair of vertices u, v ∈ V .
+#For any negative weight cycle in G, not required to return any output
+#Straight forward approach = reduce to solve SSSP problem |V| times, once for each vertex in V
+#sparse graph (i.e. |E| = O(|V |))
+#BFS on unweighted and sparse Ω(V 2) time
+#Bellman-Ford on general graphs w/ negative weight edges. Runtime O(|V |2|E|), a factor of |E| larger than the output.
+#Dijkstra on non-negative weight graphs, takes O(|V |2 log |V | + |V ||E|) time
+#On a sparse graph, running Dijkstra |V | times is only a log |V | factor larger than the output,
+#  while |V | times Bellman-Ford is a linear |V| factor larger
+
+#Is it possible to solve the APSP problem on general weighted graphs faster than O(|V|2|E|)?
+
+
+#Johnson's Algorithm
+#Idea is to reduce ASPS problem on a graph with arbitrary edge weights to the ASPS problem 
+# on a graph with non-negative edge weights
+#Re-weighting edges in original graph to non-negative values - shortest paths remain from original graph
+#Then finding shortest paths in the re-weighted graph using |V| times Dijkstra will solve the original problem.
+#Johnson's idea is to assign each vertex v a real number h(v), and change the weight of each edge
+# (a, b) from w(a, b) to w0(a, b) = w(a, b) + h(a) − h(b), to form a new weight graph G0 = (V, E, w0)
+    #A shortest path (v1,v2,...,vk) in G0 is also a shortest path in G from v1 to vk.
+#since each path from v1 to vk is increased by the same number h(v1) − h(vk), shortest paths remain shortest.
+
+#find a vertex assignment function h, for which all edge weights w0(a, b) in the modi- fied graph are non-negative
+# h = add a new node x to G with a directed edge from x to v for each vertex v ∈ V to 
+# construct graph G∗, letting h(v) = δ(x, v). This assignment of h ensures that
+#  w0(a, b) ≥ 0 for every edge (a, b).
+    #If h(v) = δ(x, v) and h(v) is finite, then w0(a, b) = w(a, b) + h(a) − h(b) ≥ 0 for every edge (a, b) ∈ E.
+#minimum weight of any path from x to b in G∗ is not greater than the minimum weight of 
+# any path from x to a than traversing the edge from a to b (triangle inequality)
+
+#Johnson’s algorithm computes h(v) = δ(x, v), negative minimum weight distances from the added node x, using Bellman-Ford
+#Any -infinity deltas means negative weight cycle and can terminate w/ no output
+#Otherwise, re-weighed edges are positive, can run Dijkstra |V| times on G' to find 
+# a single source shortest paths distances δ0(u, v) from each vertex u in G'
+# can compute each δ(u, v) by setting it to δ0(u, v)−δ(x, u)+δ(x, y)
+
+#Johnson’s takes O(|V||E|) time to run Bellman-Ford, and O(|V|(|V| log |V| + |E|)) time to 
+# run Dijkstra |V| times, so this algorithm runs in O(|V|2 log |V| + |V ||E|) time, 
+# asymptotically better than O(|V|2|E|).
+
+
+
