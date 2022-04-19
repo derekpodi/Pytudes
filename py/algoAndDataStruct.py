@@ -1887,3 +1887,112 @@ class PriorityQueue:                        # Binary Heap Implementation
 
 
 
+
+#R15
+#Dynamic Programming
+#Generalizes divide and conquer type recurrences when subprolem dependencies form a 
+# directed acyclic graph instead of a tree.
+#Often applies to optimization problems:max or min single scalar value, counting problems to count possibilities
+
+#How to Solve a Problem Recursively (SRT BOT) "sort bot"
+#1) Subproblem - subproblem x ∈ X
+    #Describe the meaning of a subproblem in words, in terms of parameters
+    #Often subsets of input: prefixes[:i], suffixes[i:], contiguous subsequences[i:j]
+    #Often record partial state: add subproblems by incrementing some auxiliary variables
+#2) Relate - subproblem solutions recursively, x(i) = f(x(j),...) for one or more j < i
+#3) Topological Order - argue relation is acyclic and subproblems form a DAG
+#4) Base cases
+    #State solutions for all (reachable) independent subproblems where relation doesn’t apply/work
+#5) Original Problem
+    #Show how to compute solution to original problem from solutions to subproblems
+    #Possibly use parent pointers to recover actual solution, not just objective function
+#6) Time analysis
+    # Product[x∈X] work(x), or if work(x) = O(W) for all x ∈ X, then |X| · O(W)
+    #work(x) measures nonrecursive work in relation; treat recursions as taking O(1) time
+
+#Implementation
+#after subproblems are chosen and a DAG of dependencies is found, two primary methods to solve:
+#Top down - evals recursion starting from roots (vertices incident to no incoming edges)
+    #End of each recursive call, solution to subproblem recorded to memo, while at the start
+    # of each recursive call, the memo is checked to see if that subproblem has already been solved
+#Bottom up - calculates each subproblem according to a topological sort order of the DAG of subproblem dependencies
+    #Also records subproblem solutions to memo, used to solve later subproblems
+    #usually subproblems are constructed so that a topological sort order is obvious, 
+    #especially when subproblems only depend on subproblems having smaller parameters, so performing a DFS to find this ordering is usually unnecessary.
+
+#the two methods are functionally equivalent but are implemented differently
+
+#Top down is a recursive view, while Bottom up unrolls the recursion.
+#Memoization is used in both implementations to remember computation from previous subproblems
+#Typically memoize all evaluated subproblems, can use fewer in rounds
+#Often don't just want value that is optimized, would like to return path of subproblems that resulted in optimzed value
+#To reconstruct answer, maintain auxilary information in addition to the value we are optimizing
+#Can maintain parent pointers to the subproblems upon which a solution to the current subproblem depends - analogous to shortest path problem pointers
+
+
+#Exercise: Simplified Blackjack
+#One player and dealer. Deck of cards in ordered sequence of n cards D = (c1,..., cn)
+# each card ci is an integer between 1-10 inclusive (aces always 1)
+#Played in rounds, dealer gets c1, c2. playr gets c3,c4 - player may draw or not
+#Win = <= 21 and exceed's dealer hand, otherwise loss
+#Game ends when deck is less than 5 cards remaining in the deck
+#Given a deck of n cards with a known order, describe an O(n)-time algorithm to determine the maximum number of rounds the player can win by playing simplified blackjack with the deck.
+#1) Subproblems -- Choose suffixes. 
+    # x(i) : maximum rounds player can win by playing blackjack using cards (ci, . . . , cn)
+#2) Relate -- Guess whether the player hits or not. 
+    # Dealer’s hand always has value ci + ci+1
+    # Player’s hand will have value either: ci+2 + ci+3 (no hit, 4 cards used in round), or ci+2 + ci+3 + ci+4 (hit, 5 cards used in round)
+    # Let w(d, p) be the round result given hand values d and p (dealer and player)
+        #player win:    w(d, p) = 1 if d < p ≤ 21
+        #player loss:   w(d, p) = 0 otherwise (if p ≤ d or 21 < p)
+    # x(i) = max{w(ci+ci+1,ci+2+ci+3)+x(i+4),w(ci+ci+1,ci+2+ci+3+ci+4)+x(i+5)}
+    #(for n − (i − 1) ≥ 5, i.e., i ≤ n − 4)
+#3) Topological Order -- Subproblems x(i) only depend on strictly larger i, so acyclic
+#4) Base Case -- x(n−3)=x(n−2)=x(n−1)=x(n)=x(n+1)=0 (not enough cards for another round)
+#5) Original Problem -- Solve x(i) for i ∈ {1, . . . , n + 1}, via recursive top down or iterative bottom up
+    #x(1): the maximum rounds player can win by playing blackjack with the full deck
+#6) Time -- # subproblems: n + 1. Work per subproblem: O(1)
+    # O(n) running time
+
+
+#Exercise Text Justification
+#Problem of fitting a sequence of n space seperated words into a column of line with constant 
+# width s, to minimize the amount of white-space between words
+#Words represented by width wi < s. To min white space, min badness of a line
+#Assumption that line contains words from wi to wj, badness of line defined as:
+    #b(i,j)=(s−(wi +...+wj))3 ifs>(wi +...+wj),andb(i,j)=∞otherwise
+#Want to partition words into lines to min the sum total of badness over all lines
+#Microsoft word uses greedy algorithm, Latex formats to min this measure of white space w/ dynamic program
+
+#Describe an O(n2) algorithm to fit n words into a column of width s that minimizes the sum of badness over all lines.
+#1) Subproblems -- choose suffixes
+    # x(i): minimum badness sum of formatting the words from wi to w(n−1)
+#2) Relate -- first line must break at some owrd, try all possibilities
+    # x(i) = min{b(i,j) + x(j+1)|i ≤ j < n}
+#3) Topological Sort -- subproblems x(i) only depend on strictly larger i, so acyclic
+#4) x(n) = 0  Badness of justfying zero words is zero
+#5) Solve subproblems via recursive top down or iterative bottom up 
+    # solution to original problem is x(0). Store parent pointers to reconstruct line breaks
+#6) Time -- of subproblems: O(n).   Work per subproblem: O(n^2)     O(n^3) runtime
+    #Can we do better than O(n^3)?
+#Optimizations
+# badness b(i,j) could be linear -- pre-compute and remember each b(i,j) in O(1) time 
+    # work per subproblem O(n) -->  O(n^2) runtime
+    # Precompute also using dynamic programming
+    # x(i, j): sum of word lengths wi to wj
+    # x(i, j) = x(i, j − 1) + wj takes O(1) time to compute, faster!
+    #Compute each b(i, j) = (s − x(i, j))3 in O(1) time
+
+#Lecture review: SRTBOT paradigm for recursive alg. design & (with memoization) for DP algorithm design 
+#Subproblem definition:  for sequence S, try 1) prefixes S[:i]  2)suffixes S[:i]    3)substrings S[i:j]
+#Prefix and suffix = linear runtime O(n).  Substring is quadratic O(n^2)
+#Relate subproblem solutions recursively. ID question about subproblem solution that if you knew answer reduces to smaller subproblem
+#Recursive Code: def f(subprob):
+#                    if subprob in memo table:              #start with empty memo = {}
+#                           return memo[subprob]
+#   else:            {base case check
+#       memo[subprob]{recurse via relation
+
+
+
+
