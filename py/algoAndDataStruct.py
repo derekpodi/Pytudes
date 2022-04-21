@@ -1996,3 +1996,75 @@ class PriorityQueue:                        # Binary Heap Implementation
 
 
 
+
+#R16
+#Dynamic Programming Exercises
+#Max Subarray Sum 
+#Given array A or n integers, what is largest sum of any nonempty subarray?
+#Example: A = [-9, 1, -5, 4, 3, -6, 7, 8, -2], largest subsum is 16.    (A[3:8])
+#Brute forse is O(n^3), compute sum of O(n^2) subarrays in O(n) time
+#faster by noticing subarray with max sum must end somewhere -- end at particular locaation k 
+# in O(n) time by scanning left to k, track rolling sum and remember max
+#n end locations, so alg runs in O(n^2) time -- but can go faster by reusing work from earlier scans -DP!
+#1) Subproblems  -- x(k): the max subarray sum ending at A[k]
+    #Prefix subproblem, but with condition Longest Increase Subsequence (LIS)
+#2) Relate -- Maximizing subarray ending at k either uses item k − 1 or it doesn’t
+    #if not, subarray is just A[k]. otherwise k-1 is used, incluse max subarray ending at k-1
+    # x(k) = max{A[k], A[k] + x(k − 1)}
+#3) Topo Order -- subproblems x(k) depend on smaller k, so acyclic
+#4) Base -- x(0) = A[0] --non empty
+#5) Original -- Solution to original is max of all subproblems, i.e., max{x(k) | k ∈ {0, . . . , n − 1}}
+    # Subproblems are used twice: when computing the next larger, and in the final max
+#6) Time --  # of subproblems O(n),  work per subproblem O(1)   , time to solve original subproblem O(n)
+    # O(n) time in total
+
+#bottom up implementation
+def max_subarray_sum(A):
+    x = [None for _ in A]                       #memo
+    x[0] = A[0]                                 #base case
+    for k in range(1, len(A)):                  #iteration
+        x[k] = max(A[k], A[k] + x[k - 1])       #relation
+    return max(x)                               #original
+
+
+#Edit Distance
+#Plagarism detector needs to detect similarity between two texts, string A and sting B
+#Measure of similarity is called the edit distance, min # of edits that will transform A -> B
+# 3 operations: delete a char of A, replace char of A with another, insert between two char of A
+#Describe a O(|A||B|) time algorithm to compute the edit distance between A and B.
+#1) Subproblems -- modify A until last char matches B
+    # x(i, j): minimum number of edits to transform prefix up to A(i) to prefix up to B(j)
+#2) Relate  -- if A(i) = B(j) then match!
+    #Otherwise edit to make last element of A equal to B(j) - delete, insert, or replace (Guess!)
+    #Delete removes A(i). Insert add B(j) to end of A, then removes it and B(j). Replace changes A(i) to B(j) and removes both A(i)/b(j)
+    #x(i,j) =   {x(i-1, j-1)                                if A(i) = B(i)
+    #           {1 + min(x(i−1,j), x(i,j−1), x(i−1,j−1))    otherwise
+#3) Topological order    -- Subproblems x(i, j) only depend on strictly smaller i and j, so acyclic
+#4) Base Case -- x(i, 0) = i, x(0, j) = j (need many insertions or deletions)
+#5) Original -- Solution to original problem is x(|A|, |B|), can store parent pointers to reconstruct edits transforming A to B
+#6) Time -- # subproblems: O(n2). work per subproblem: O(1). O(n2) running time
+
+def edit_distance(A, B):
+    x = [[None] * len(A) for _ in range(len(B))]        #memo
+    x[0][0] = 0                                         #base cases
+    for i in range(1, len(A)):
+        x[i][0] = x[i - 1][0] + 1                       # delete A[i]
+    for j in range(1, len(B)):
+        x[0][j] = x[0][j - 1] + 1                       # insert B[j] into A
+    for i in range(1, len(A)):                          # dynamic program
+        for j in range(1, len(B)):
+            if A[i] == B[j]:
+                x[i][j] = x[i - 1][j - 1]               # matched! no edit needed
+            else:                                       # edit needed!
+                ed_del = 1 + x[i - 1][j]                # delete A[i]
+                ed_ins = 1 + x[i][j - 1]                # insert B[j] after A[i]
+                ed_rep = 1 + x[i - 1][j - 1]            # replace A[i] with B[j]
+                x[i][j] = min(ed_del, ed_ins, ed_rep)
+    return x[len(A) - 1][len(B) - 1]
+
+
+#Lecture examples - Longest Common Subsequence(LCS), Longest Increasing Subsequence (LIS), Alternating Coin Game 
+# deal with multiple sequences, substring subproblems, parent pointers, subproblem constrint and expansion
+
+
+
