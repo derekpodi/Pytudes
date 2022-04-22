@@ -2257,3 +2257,63 @@ def edit_distance(A, B):
 
 
 
+
+#R20
+#Course Review
+#Goals - 1) Solve hard computational problems (non constant-sized inputs)
+        #2) Argue algorithm is correct (induction, recursion)
+        #3) Argue an algorithm is "good" (asymptotics, model of computation)
+        #4) Effectively communicate all three aboe points
+
+#Do there always exist good algorithms? No!
+    #Most not solvable efficiently. Polynomial = polynomial size of input. Pseudopolynomial = poly in size of input AND size of numbers in input
+    #NP = nondeterministic polynomial time, are certificates polynomially checkable
+        #NP-hard: set of problems that can be used to solve any problem in NP poly time
+        #NP-complete: intersection of NP-hard and NP  |
+
+#How do you solve algorithms problem?
+#Reduce to a problem you know how to solve
+    #Search/Sort
+        #Search: Extrinsic(Sequence) and Intrinsic (Set) data structures
+        #Sort: Comparison Model, Stability, In-place
+    #Graphs
+        #Reachability, Connected Components, Cycle Detection, Topological Sort
+        #Single-Source / All-Pairs Shortest Paths
+
+#Design of a novel Recursive Algorithm
+    #Brute Force
+    #Divide and Conquer
+    #Dynamic Programming -- SRT BOT
+    #Greedy/Incremental
+
+#further OCW 6.046 Design & Analysis of Algorithms
+    #grad: 6.851: Advanced Data Structures, 6.854: Advanced Algorithms
+    #Cryptography (6.875), Biology (6.047), Game Theory (6.853), Graphics (6.837), Vision (6.819), Geometry (6.850)
+
+#6.046 = extension of 6.006
+#Data Structures: Union-find, Amortization via potential analysis
+#Graphs: Min Spanning Trees, Network Flows/Cuts
+#Algorithm Design (Paradigms): Divide and Conquer, Dynammic Programming, Greedy
+#Complexity: Reductions
+
+#Relax Problems
+    #Randomized Algorithms
+        # Las Vegas: always correct, probably fast (like hashing)
+        # Monte Carlo: always fast, probably correct
+        #generally get faster randomized algorithms on structured data
+    #Numerical Algorithms/Continuous Optimization
+        #Approximate real numbers! Pay time for precision
+    #Approximation Algorithms
+        #Input optimization problem (min/max over weighted outputs)
+        #Many optimization problems NP-hard
+        #Can we get close to optimal solution in polynomial time?
+
+#Change Model of Computation
+    #In 6.006 used the Word-RAM model - bits representation
+    #Cache Models (memory hierarchy cost model)
+    #Quantum Computer (exploiting quantum properties)
+    #Parallel Processors (use multiple CPUs instead of just one)
+        #Multicore, large shared memory
+        #Distributed cores, message passing
+
+
