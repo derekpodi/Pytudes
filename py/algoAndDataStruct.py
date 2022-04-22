@@ -2135,3 +2135,48 @@ def edit_distance(A, B):
 
 
 
+
+
+#R18
+#Dyanamic Programming [cont.]
+#Subset Sum Variants
+    # Input: Set of n positive integers A[i]
+    # Output: Is there subset A' ⊂ A such that SUM(a∈A' a) = S? 
+    # Can solve with DP in O(nS) time 
+#Subset Sum
+#1) Subproblems
+    # x(i, j): True if can make sum j using items 1 to i, False otherwise
+#2) Relate -- Is last item i in a valid subset? (Guess!)
+    #If yes, then try to sum to j − A[i] ≥ 0 using remaining items
+    #If no, then try to sum to j using remaining items
+    #x(i,j)=OR    ( x(i−1,j−A[i]) ifj≥A[i] ) 
+    #               x(i − 1, j) always     )     for i ∈ {0,...,n},j ∈ {0,...,S}
+#3) Topological Order - Subproblems x(i, j) only depend on strictly smaller i, acyclic
+#4) Base -  x(i,0) = True for i ∈ {0,...,n} (trivial to make zero sum!)
+    #       x(0, j) = False for j ∈ {1, . . . , S} (impossible to make positive sum from empty set)
+#5) Original - Maximum evaluated expression is given by x(n, S)
+#6) Time - (# subproblems: O(nS)) × (work per subproblem O(1)) = O(nS) running time.
+
+#Knapsack example: 
+#Input: Knapsack with size S, want to fill with items each item i has size si and value vi.
+#Output: A subset of items (may take 0 or 1 of each) with P si ≤ S maximizing value P vi
+#(Subset sum same as 0-1 Knapsack when each vi = si, deciding if total value S achievable)
+#Solution: Subset with max value is all items except the last one (greedy fails)
+    #If yes, get value vi and pack remaining space S − si using remaining items
+    #If no, then try to sum to S using remaining items
+
+#1) Subproblem - x(i, j): maximum value by packing knapsack of size j using items 1 to i
+#2) Relate
+    #       x(i,j)= max (vi+x(i−1,j−si) ifj≥s ) 
+    #                   x(i − 1, j) always                
+#3) Topo - depend on small i
+#4) Base - x(i,0) = 0 for i ∈ {0,...,n} (zero value possible if no more space)
+    # x(0,j) = 0 for j ∈ {1,...,S} (zero value possible if no more items)
+#5) Original -- Maximum evaluated expression is given by x(n, S), store parent pointers to get items
+#6) Time    # subproblems: O(nS)    work per subproblem O(1)    O(nS) running time
+
+#Subset Sum         https://codepen.io/mit6006/pen/JeBvKe
+#Knapsack           https://codepen.io/mit6006/pen/VVEPod
+
+
+
