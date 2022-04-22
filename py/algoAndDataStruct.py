@@ -2068,3 +2068,70 @@ def edit_distance(A, B):
 
 
 
+
+#R17
+#Dynamic Programming (cont.)
+#Treasureship! example:
+#Battleship alt. Place 2 x 1 ships within a 2 x n rectangular grid. Can place horizontal or vertical
+#Take 2 grid squares, each has +/- int value, representing treasure to be acquired or lost at square
+#Can place unlimited ships, the score of a placement of ships being the value sum of all grid squares covered by ships
+#Design a placement of ships that will max your total score
+
+#1) Subproblems - board has n columns of height 2
+    # Let v(x,y) denote the grid value at row y column x , for y ∈ {1,2} and x ∈ {1,...,n}
+    #Guess how to cover the right most squares in optimal placement - not cover, place ship vert, or ship horz
+    #Exists optimal placement where no two ships aligned horizontally on top of each other
+    #Lets(i,j)represent game board subset containing columns 1 to i of row 1,and columns 1 to i + j of row 2, for j ∈ {0, +1, −1}
+    # x(i, j): maximum score, only placing ships on board subset s(i, j)  for i ∈ {0,...,n}, j ∈ {0,+1,−1}
+#2) Relate 
+    # If j = +1, can cover right-most square with horizontal ship or leave empty
+    # If j = −1, can cover right-most square with horizontal ship or leave empty
+    # If j = 0, can cover column i with vertical ship or not cover one of right-most squares
+    '''
+                    max{v(i,1)+v(i-1,1)+x(i-2,+1),x(i-1,0)}             if j = -1
+    x(i,j)=         max{v(i+1,2)+v(i,2)+x(i,-1),x(i,0)}                 if j = +1
+                    max{v(i,1)+v(i,2)+x(i-1,0),x(i,-1),x(i-1,+1)}       if j = 0
+    '''
+#3) Topo - Subproblems x(i, j) only depend on strictly smaller 2i + j, so acyclic
+#4) Base - s(i, j) contains 2i + j grid squares.  x(i, j) = 0 if 2i + j < 2 (can’t place a ship if fewer than 2 squares!)
+#5) Original - Solution is x(n, 0), the maximum considering all grid squares. 
+    #Store parent pointers to reconstruct ship locations
+#6) Time - # subproblems: O(n). work per subproblem O(1).  O(n) running time
+
+
+#Wafer Power
+#Circuit design for highly-parallel computing
+#Evenly- spaced along the perimeter of a circular wafer sits n ports for either a power source or a computing unit.
+#computing unit needs energy from a power source, transferred between ports via a wire etched into the top surface of the wafer.
+#But, if computing unit connected to power source too close, can overload and destroy circuit
+#Also, no two etched wires may cross each other
+#Given an arrangement of power sources and computing units plugged into the n ports
+#describe an O(n3)-time dynamic programming algorithm to match computing units to power sources
+#  by etching non-crossing wires between them onto the surface of the wafer, in order to maximize 
+# the number of powered computing units, where wires may not connect two adjacent ports along the perimeter.
+
+#1) Subproblems
+    #Let (a1, . . . , an) be the ports cyclically ordered counter-clockwise around the wafer, where ports a1 and an are adjacent
+    #Let ai be True if the port is a computing unit, and False if it is a power source
+    # Want to match opposite ports connected by non-crossing wires
+    # If match across the wafer,need to independently match ports on either side(substrings!)
+    # x(i, j): maximum number of matchings, restricting to ports ak for all k ∈ {i, . . . , j}
+        #for i∈{1,...,n}, j∈{i−1,...,n}
+    #j − i + 1 is number of ports in substring (allow j = i − 1 as an empty substring)
+#2) Relate
+    # Guess what port to match with first port in substring. Options:
+        # first port does not match with anything, try to match the rest;
+        # first port matches a port in the middle, try to match each side independently.
+    # Non-adjacency condition restricts possible matchings between i and some port t (neighbors):
+        # if (i, j) = (1, n), can’t match i with last port n or 2, so try t ∈ {3, . . . , n − 1}
+        # otherwise, just can’t match i with i + 1, so try t ∈ {i + 2, . . . , j}
+    # Let m(i, j) = 1 if ai =/= aj and m(i, j) = 0 otherwise (ports of opposite type match)
+    #x(1,n) = max{x(2,n)} ∪ {m(1,t) + x(2,t−1) + x(t+1,n)| t∈{3,...,n−1}}
+    #x(i,j) = max{x(i+1,j)} ∪ {m(i,t) + x(i+1,t−1) + x(t+1,j) | t ∈ {i+2,...,j}}
+#3) Topo - Subproblems x(i, j) only depend on strictly smaller j − i, so acyclic
+#4) Base - x(i, j) = 0 for any j − i + 1 ∈ {0, 1, 2} (no match within 0, 1, or 2 adjacent ports)
+#5) Original - Solution to original problem is x(1, n). Store parent pointers to reconstruct matching(e.g.,choice of t or no match at each step)
+#6) Time  - # subproblems: O(n2). work per subproblem: O(n).    O(n^3) running time
+
+
+
