@@ -2180,3 +2180,80 @@ def edit_distance(A, B):
 
 
 
+
+#R19
+#Complexity
+#Knapsack Problem Revisited
+    #Input: Knapsack with volume S, want to fill with items: item i has size si and value vi.
+    #Output: A subset of items (may take 0 or 1 of each) with SUM (si ≤ S) maximizing SUM (vi)
+    #Solvable in O(nS) time via dynamic programming
+#How does run time compare to input?
+    #Input size? if numbers written in binary, input has size O(n log S) bits
+    #O(nS) runs in exponential time compared to input
+    #If numbers polynomially bounded, S = nO(1), then dynamic program is polynomial
+#Called pseudopolynomial time algorithm
+#Can it be solved in polynomial time when numbers are not polynomially bounded?
+# No if P =/= NP        (polynomial time doesnt equal non-deterministic polynomial time)
+
+#Decision Problems
+#Decision problem: assignment of inputs to No (0) or Yes (1)
+#Inputs are either No instances or Yes instances (i.e. satisfying instances)
+#ex. shortest path(s-t), Negative cycle, Longest Path, Subset Sum, Tetris, Chess, Halting Problems
+#Algorithm/Program: constant length code (working on a word-RAM with Ω(log n)-bit words) to solve
+#  a problem, i.e., it produces correct output for every input and the length of the code is 
+# independent of the instance size
+#Decidable if program exists to solve problem in finite time(not infinity)
+
+#Decidability
+#A program is finite string of bits (program is a file made of strings made of bits)
+#(# of programs |N|, countably infinite) << (# of problems |R|, uncountably infinite)
+    #Proves that most decision problems not solvable by any program (undecidable)
+    #Fortunately most problems we think of are algorithmic in structure and are decidable
+#Decidable Problem Classes
+    #R = finite time (recursive)    EXP = exponential time 2nO(1) (most problems here)
+    #P = polynomial time nO(1) (efficient algorithms)
+    #sets are distinct, i.e. P < EXP < R
+
+#Nondeterministic Polynomial Time (NP)
+    #P is the set of decision problems for which there is an algorithm A such that for every 
+    # instance I of size n, A on I runs in poly(n) time and solves I correctly
+    #NP is the set of decision problems for which there is an algorithm V , a “verifier”, that 
+    # takes as input an instance I of the problem, and a “certificate” bit string of length 
+    # polynomial in the size of I, so that:
+        #V always runs in time polynomial in the size of I
+        #if I is a YES-instance, then there is some certificate c so that V on input (I , c) returns YES
+        #if I is a NO-instance, then no matter what c is given to V together with I, V will always output NO on (I , c)
+    #You can think of the certificate as a proof that I is a YES-instance. If I is actually a NO- instance then no proof should work
+    #P within NP (if you can solve the problem, the solution is a certificate)
+    #Most people think Most people think P ( NP (( EXP), i.e.,t generating solutions harder than checking
+        #If can show a problem is hardest problem in NP, then problem cannot be solved in polynomial time if P /= NP
+
+#Reductions
+#Want to solve problem A. Can convert A into problem B you know how to solve
+    #Solve using algorithm for B and use it to compute solution to A
+#Called a Reduction from problem A to problem B (A → B)
+#Because B can be used to solve A, B is at least as hard (A ≤ B)
+
+#General algorithmic strategy: reduce to a problem you know how to solve
+    #ex. A(unweighted shortest paths) -> convert (give equal lengths 1) -> B(weighted shortest path)
+#Problem A is NP-Hard if every problem in NP is polynomially reducible to A
+    # A is at least as hard as(can be used to solve) every problem in NP (X ≤ A for X ∈ NP)
+
+#NP-Complete = NP ∩ NP-Hard
+
+#All NP-Complete problems are equivalent, i.e. reducible to each other
+#First NP-Complete? Every decision problem reducible to satisfying a logical circuit
+    #ex. longest path, tetris are np-complete, chess is exp-complete
+
+#               NP-Hard->       EXP-Hard->
+# < --- | --- NP-Complete --- EXP-complete --- | --->
+#     <-P       <-NP            <-EXP         <-R
+
+#Knapsack problem = NP-hard. Reduce: Partition
+# Input: List of n numbers ai   Output: Does there exist a partition into two sets with equal sum?
+#Reduction: si = vi = ai, S = 1  SUM(ai)
+#Knapsack at least as hard as Partition, so since Partition is NP-Hard, so is Knapsack 
+# Knapsack in NP, so also NP-Complete
+
+
+
