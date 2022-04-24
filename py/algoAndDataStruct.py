@@ -2317,3 +2317,4 @@ def edit_distance(A, B):
         #Distributed cores, message passing
 
 
+#End of recitation material for 6.006 
